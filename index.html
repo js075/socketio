@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Socket.IO Chat</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+    <h2>Socket.IO Chat App</h2>
+
+    <label>Enter Room Name:</label>
+    <input type="text" id="roomInput" placeholder="Enter room name">
+    <button onclick="joinRoom()">Join Room</button>
+    <button onclick="leaveRoom()">Leave Room</button>
+
+    <br><br>
+
+    <label>Enter Message:</label>
+    <input type="text" id="messageInput" placeholder="Type a message">
+    <button onclick="sendMessage()">Send Message</button>
+
+    <br><br>
+
+    <h3>Messages:</h3>
+    <div id="messages"></div>
+
+    <script>
+        const socket = io("http://localhost:3000"); // Connect to the server
+
+        function joinRoom() {
+            let roomName = document.getElementById("roomInput").value;
+            if (roomName) {
+                socket.emit("joinroom", roomName); // Emit join room event
+                appendMessage(`Joined Room: ${roomName}`);
+            }
+        }
+
+        function leaveRoom() {
+            let roomName = document.getElementById("roomInput").value;
+            if (roomName) {
+                socket.emit("leaveroom", roomName); // Emit leave room event
+                appendMessage(`Left Room: ${roomName}`);
+            }
+        }
+
+        function sendMessage() {
+            let roomName = document.getElementById("roomInput").value;
+            let message = document.getElementById("messageInput").value;
+            if (roomName && message) {
+                socket.emit("message", { roomname: roomName, msg: message }); // Emit message event
+                appendMessage(`You: ${message}`);
+            }
+        }
+
+        // Listen for messages from the server
+        socket.on("sending messsgage to all clients", (msg) => {
+            appendMessage(`Global Message: ${msg}`);
+        });
+
+        socket.on("userLeft", (msg) => {
+            appendMessage(`⚠️ ${msg}`);
+        });
+
+        socket.on("roomMessage", (msg) => {
+            appendMessage(`Room: ${msg}`);
+        });
+
+        function appendMessage(msg) {
+            let messageDiv = document.getElementById("messages");
+            let newMessage = document.createElement("p");
+            newMessage.textContent = msg;
+            messageDiv.appendChild(newMessage);
+        }
+    </script>
+</body>
+</html>
